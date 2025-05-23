@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AES Cryptor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body class="bg-slate-100 dark:bg-slate-900">
+  <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <main class="w-full max-w-2xl bg-white dark:bg-slate-800 p-6 md:p-10 rounded-xl shadow-2xl">
+      <header class="text-center mb-8">
+        <div id="header-icon-container" class="flex items-center justify-center text-sky-600 dark:text-sky-400 mb-2 w-10 h-10 mx-auto">
+          <!-- Icon will be injected here by JS -->
+        </div>
+        <h1 id="header-title" class="text-3xl font-bold text-slate-800 dark:text-slate-100">AES Cryptor</h1>
+        <p id="header-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1">Securely encrypt or decrypt your text.</p>
+      </header>
+
+      <div id="alert-container" class="mb-4"></div>
+      
+      <form id="crypto-form">
+        <div class="mb-4">
+          <label id="input-text-label" for="inputText" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Text to Encrypt <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="inputText"
+            rows="5"
+            placeholder="Enter your sensitive text here..."
+            required
+            class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-50 dark:placeholder-slate-400 dark:focus:border-sky-500 dark:focus:ring-sky-500"
+          ></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label for="secretKey" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Secret Key <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="secretKey"
+            type="password"
+            placeholder="Enter your secret key (passphrase)"
+            required
+            class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-50 dark:placeholder-slate-400 dark:focus:border-sky-500 dark:focus:ring-sky-500"
+          />
+        </div>
+
+        <fieldset class="mb-6">
+          <legend class="text-base font-medium text-slate-900 dark:text-slate-200 mb-2">Select Operation</legend>
+          <div class="flex items-center space-x-6">
+            <div class="flex items-center">
+              <input
+                id="operation-encrypt"
+                name="operationMode"
+                type="radio"
+                value="encrypt"
+                checked
+                class="focus:ring-sky-500 h-4 w-4 text-sky-600 border-gray-300 dark:bg-slate-600 dark:border-slate-500 dark:checked:bg-sky-500"
+              />
+              <label for="operation-encrypt" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">
+                Encrypt
+              </label>
+            </div>
+            <div class="flex items-center">
+              <input
+                id="operation-decrypt"
+                name="operationMode"
+                type="radio"
+                value="decrypt"
+                class="focus:ring-sky-500 h-4 w-4 text-sky-600 border-gray-300 dark:bg-slate-600 dark:border-slate-500 dark:checked:bg-sky-500"
+              />
+              <label for="operation-decrypt" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">
+                Decrypt
+              </label>
+            </div>
+          </div>
+        </fieldset>
+        
+        <button
+          id="process-button"
+          type="submit"
+          class="w-full font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center justify-center transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 text-white bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 dark:bg-sky-500 dark:hover:bg-sky-600"
+        >
+          Encrypt Text
+        </button>
+      </form>
+
+      <div id="output-section" class="mt-8" style="display: none;">
+        <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">Result:</h2>
+        <div class="relative p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md shadow-sm">
+          <pre id="outputText-display" class="text-sm text-slate-700 dark:text-slate-100 whitespace-pre-wrap break-all overflow-x-auto"></pre>
+          <button
+            id="copy-button"
+            type="button"
+            aria-label="Copy result to clipboard"
+            class="absolute top-2 right-2 p-2 text-slate-500 hover:text-sky-600 hover:bg-sky-100 rounded-full focus:ring-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:text-slate-400 dark:hover:text-sky-400 dark:hover:bg-slate-700"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+              <path d="M4 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+    <footer class="mt-8 text-center text-xs text-slate-600 dark:text-slate-400 max-w-2xl px-4">
+      <p><strong>Disclaimer:</strong> This tool performs encryption/decryption entirely in your browser. No data is sent to any server. For highly sensitive information, always rely on professionally audited security solutions.</p>
+      <p class="mt-1">Uses AES (Advanced Encryption Standard) via CryptoJS.</p>
+    </footer>
+  </div>
+  <script src="demo.js"></script>
+</body>
+</html>
